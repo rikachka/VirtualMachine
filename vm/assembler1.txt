@@ -1,0 +1,26 @@
+[00] : IR = 40
+[04] : BR = 1
+[08] : TP = 228
+[12] : SE = 200
+[16] : VS = 10
+[20] : NS = 0
+[24] : CS1 = 1
+[28] : CS2 = 2
+[32] : AS = 2
+[36] : IN = 0
+INP IN
+PUSH 0
+PUSH 60
+PUSH IN
+MOV VS TP
+OUT VS
+MOV NS TP
+PUSH 0
+PUSH 104
+PUSH NS
+POP
+MOV NS TP
+POP
+MOV AS TP
+POP
+POP
