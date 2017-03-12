@@ -58,7 +58,7 @@ class Translator:
                     byte_code[i] = int(tokens[i])
                 else:
                     self.labels_transitions += [(tokens[i], self.byte_line_index, i)]
-        return byte_code
+        return byte_code 
 
     def translate(self):
         byte_file = open(self.byte_path, 'w+')
