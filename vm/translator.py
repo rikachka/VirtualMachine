@@ -21,9 +21,6 @@ class Translator:
         file.write('\n')
 
     def process_labels(self):
-        print self.variables_addresses
-        print self.labels_addresses
-        print self.labels_transitions
         for transition in self.labels_transitions:
             label_address = self.labels_addresses.get(transition[0])
             if label_address:
@@ -60,10 +57,7 @@ class Translator:
                 if tokens[i].isdigit():
                     byte_code[i] = int(tokens[i])
                 else:
-                    # print "wtf?"
                     self.labels_transitions += [(tokens[i], self.byte_line_index, i)]
-                    # print "ERROR! Unknown token: ", tokens[i]
-                    # exit(-1)
         return byte_code
 
     def translate(self):
@@ -76,26 +70,17 @@ class Translator:
                 byte_code = self.translate_variable(assembler_line)
             else:
                 byte_code = self.translate_command(assembler_line)
-            # print byte_code
-            # byte_file.write(bytearray(byte_code))
             self.byte_lines += [byte_code]
-            # self.write_byte_line(byte_file, byte_code)
             self.byte_line_index += 1
         for i in range(self.stack_size):
             empty_space = [0, 0, 0, 0]
-            # byte_file.write(bytearray(empty_space))
             self.byte_lines += [empty_space]
-            # self.write_byte_line(byte_file, empty_space)
-        for byte_line in self.byte_lines:
-            print(byte_line)
         self.process_labels()
         for byte_line in self.byte_lines:
-            print(byte_line)
             self.write_byte_line(byte_file, byte_line)
         byte_file.close()
 
 if __name__ == '__main__':
-    # translator = Translator('assembler1.txt', 'bytecode.txt')
     translator = Translator('fib.txt', 'bytecode_fib.txt')
     translator.translate()
 
