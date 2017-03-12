@@ -3,6 +3,7 @@ from commands_codes import commands_codes
 
 class Translator:
     byte_size = 4
+    stack_size = 32
 
     def __init__(self, assembler_path, byte_path):
         assembler_file = open(assembler_path, 'r')
@@ -80,10 +81,10 @@ class Translator:
             self.byte_lines += [byte_code]
             # self.write_byte_line(byte_file, byte_code)
             self.byte_line_index += 1
-        # for i in range(32):
-        #     empty_space = [0, 0, 0, 0]
+        for i in range(self.stack_size):
+            empty_space = [0, 0, 0, 0]
             # byte_file.write(bytearray(empty_space))
-            # self.byte_lines += [empty_space]
+            self.byte_lines += [empty_space]
             # self.write_byte_line(byte_file, empty_space)
         for byte_line in self.byte_lines:
             print(byte_line)

@@ -23,7 +23,7 @@ class Interpreter:
         self.byte_code[var_address // self.byte_size][3] = value
 
     def goto(self, label):
-        self.line_index = label
+        self.line_index = label // self.byte_size
 
     def INP(self, args):
         input_var = args[0]
@@ -58,13 +58,21 @@ class Interpreter:
     def LAB(self, args):
         pass
 
+    def STOP(self, args):
+        return True
+
     def interprete(self):
         commands_names = {elem[1]: elem[0] for elem in commands_codes.items()}
         while True:
-        # for byte_line in self.byte_code:
             byte_line = self.byte_code[self.line_index]
+            # print "fff", byte_line
             if byte_line[0] == 0:
+                self.line_index += 1
                 continue
+            # print "fff", byte_line
+            # for line in self.byte_code:
+            #     print line
+            # input()
             command_name = commands_names.get(byte_line[0])
             if command_name is None:
                 print "ERROR! Unknown command"
@@ -73,8 +81,8 @@ class Interpreter:
             if is_program_end:
                 break
             self.line_index += 1
-        for byte_line in self.byte_code:
-            print byte_line
+        # for byte_line in self.byte_code:
+        #     print byte_line
 
 if __name__ == '__main__':
     translator = Interpreter('bytecode_fib.txt')

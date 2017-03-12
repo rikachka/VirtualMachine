@@ -1,16 +1,19 @@
-[00] : FIB1 = 1
+[00] : FIB1 = 0
 [04] : FIB2 = 1
 [08] : N = 0
 [12] : X = 0
+[16] : I = 1
 
 INP N
+DIF N I
 
 LAB LAB_FIB
 MOV X FIB1
 SUM X FIB2
 MOV FIB1 FIB2
 MOV FIB2 X
-DIF N 1
+DIF N I
 NE0 N LAB_FIB
 
 OUT FIB2
+STOP
