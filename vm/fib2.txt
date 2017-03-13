@@ -1,9 +1,13 @@
-[00] : FIB1 = 0
-[04] : FIB2 = 1
-[08] : N = 0
-[12] : X = 0
-[16] : P1 = 1
+VAR FIB1 0
+VAR FIB2 1
+VAR N 0
+VAR X 0
 
+VAR P1 1
+VAR S1 "Vvedite_N:"
+VAR S2 "Nnoe_chislo_Fibonachi:"
+
+OUT S1
 INP N
 DIF N P1
 E0 N LAB_FIB_1
@@ -17,5 +21,6 @@ DIF N P1
 NE0 N LAB_FIB
 
 LAB LAB_FIB_1
+OUT S2
 OUT FIB2
 STOP
