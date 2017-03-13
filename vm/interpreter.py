@@ -7,7 +7,9 @@ class Interpreter:
 
     def __init__(self, byte_path):
         self.byte_code = self.read_byte_file(byte_path)
-        self.line_index = 0
+        self.code_line_index = 0
+        self.stack_line_index = 0
+        self.commands_names = {elem[1]: elem[0] for elem in commands_codes.items()}
 
     def read_byte_file(self, byte_path):
         byte_file = open(byte_path, 'r')
@@ -38,7 +40,17 @@ class Interpreter:
         self.byte_code[byte_code_line][3] = value
 
     def goto(self, label):
-        self.line_index = label // self.byte_size
+        self.code_line_index = label // self.byte_size
+
+    def push_stack(self, variable):
+        self.byte_code[self.stack_line_index][3] = variable
+        self.stack_line_index += 1
+
+    def pop_stack(self):
+        self.stack_line_index -= 1
+        variable = self.byte_code[self.stack_line_index][3]
+        self.byte_code[self.stack_line_index][3] = 0
+        return variable
 
     def VAR(self, args):
         pass
@@ -84,19 +96,62 @@ class Interpreter:
     def STOP(self, args):
         return True
 
+    def PUSH(self, args):
+        pushing_var = args[0]
+        self.push_stack(self.get_value(pushing_var))
+
+    def POP(self, args):
+        popped_var = args[0]
+        new_value = self.pop_stack()
+        self.set_value(popped_var, new_value)
+        # print new_value
+
+    def PAD(self, args):
+        self.push_stack(self.code_line_index * self.byte_size)
+
+    def FUN(self, args):
+        pass
+
+    def RET(self, args):
+        next_label = self.pop_stack()
+        returned_var = args[0]
+        self.push_stack(self.get_value(returned_var))
+        self.goto(next_label)
+        byte_line = self.byte_code[self.code_line_index]
+        command_name = self.commands_names.get(byte_line[0])
+        while command_name != "CALL":
+            self.code_line_index += 1
+            byte_line = self.byte_code[self.code_line_index]
+            command_name = self.commands_names.get(byte_line[0])
+
+    def CALL(self, args):
+        function_name = args[0]
+        self.goto(function_name)
+
+    def write_byte_file(self):
+        byte_file = open("bytecode_fib3_tmp.txt", 'w+')
+        for byte_line in self.byte_code:
+            for byte in byte_line:
+                byte_file.write(hex(byte).ljust(6))
+            byte_file.write('\n')
+        byte_file.close()
+
     def interprete(self):
-        commands_names = {elem[1]: elem[0] for elem in commands_codes.items()}
         while True:
-            byte_line = self.byte_code[self.line_index]
-            command_name = commands_names.get(byte_line[0])
+            byte_line = self.byte_code[self.code_line_index]
+            command_name = self.commands_names.get(byte_line[0])
+            # if command_name != 'VAR':
+                # self.write_byte_file()
+                # input()
+                # print command_name, self.code_line_index, byte_line
             if command_name is None:
                 print "ERROR! Unknown command"
                 exit(-1)
             is_program_end = getattr(self, command_name)(byte_line[1:])
             if is_program_end:
                 break
-            self.line_index += 1
+            self.code_line_index += 1
 
 if __name__ == '__main__':
-    translator = Interpreter('bytecode_fib2.txt')
+    translator = Interpreter('bytecode_fib3.txt')
     translator.interprete()

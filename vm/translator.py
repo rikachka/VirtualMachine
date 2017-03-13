@@ -3,7 +3,7 @@ from commands_codes import commands_codes
 
 class Translator:
     byte_size = 4
-    stack_size = 32
+    stack_size = 30
 
     def __init__(self, assembler_path, byte_path):
         assembler_file = open(assembler_path, 'r')
@@ -13,21 +13,24 @@ class Translator:
         self.free_stack_address = 0
         self.variables_addresses = {}
         self.byte_line_index = 0
-        self.labels_addresses = {}
-        self.labels_transitions = []
+        self.initialized_addresses = {}
+        self.initialized_mentions = []
 
-    def write_byte_line(self, file, byte_code):
-        for byte in byte_code:
-            file.write(hex(byte).ljust(5))
-        file.write('\n')
+    def write_byte_file(self):
+        byte_file = open(self.byte_path, 'w+')
+        for byte_line in self.byte_lines:
+            for byte in byte_line:
+                byte_file.write(hex(byte).ljust(6))
+            byte_file.write('\n')
+        byte_file.close()
 
-    def process_labels(self):
-        for transition in self.labels_transitions:
-            label_address = self.labels_addresses.get(transition[0])
-            if label_address:
-                self.byte_lines[transition[1]][transition[2]] = label_address * self.byte_size
+    def process_mentioning(self):
+        for mention in self.initialized_mentions:
+            mentioned_address = self.initialized_addresses.get(mention[0])
+            if mentioned_address:
+                self.byte_lines[mention[1]][mention[2]] = mentioned_address * self.byte_size
             else:
-                print "ERROR! Unknown token: " + transition[0]
+                print "ERROR! Unknown token: " + mention[0]
                 exit(-1)
 
     def translate_variable(self, tokens):
@@ -47,9 +50,9 @@ class Translator:
             self.free_stack_address += self.byte_size
             return [[0, 0, 0, variable_int]]
 
-    def translate_label(self, tokens):
-        label_name = tokens[1]
-        self.labels_addresses[label_name] = self.byte_line_index
+    def translate_initializations(self, tokens):
+        initialized_name = tokens[1]
+        self.initialized_addresses[initialized_name] = self.byte_line_index
         return [[0, 0, 0, 0]]
 
     def translate_command(self, tokens):
@@ -62,7 +65,7 @@ class Translator:
                 if tokens[i].isdigit():
                     byte_code_line[i] = int(tokens[i])
                 else:
-                    self.labels_transitions += [(tokens[i], self.byte_line_index, i)]
+                    self.initialized_mentions += [(tokens[i], self.byte_line_index, i)]
         return [byte_code_line]
 
     def translate_line(self, assembler_line):
@@ -71,8 +74,8 @@ class Translator:
         if command_code is None:
             print "ERROR! No such command: ", tokens[0]
             exit(-1)
-        if tokens[0] == 'LAB':
-            byte_code = self.translate_label(tokens)
+        if tokens[0] == 'LAB' or tokens[0] == 'FUN':
+            byte_code = self.translate_initializations(tokens)
         elif tokens[0] == 'VAR':
             byte_code = self.translate_variable(tokens)
         else:
@@ -82,23 +85,24 @@ class Translator:
         return byte_code
 
     def translate(self):
-        byte_file = open(self.byte_path, 'w+')
         self.byte_lines = []
+        for i in range(self.stack_size):
+            empty_space = [0, 0, 0, 0]
+            self.byte_lines += [empty_space]
+            self.byte_line_index += 1
+        self.free_stack_address = self.stack_size * self.byte_size
         for assembler_line in self.assembler_code:
             if assembler_line == '\n':
                 continue
             byte_code = self.translate_line(assembler_line)
             self.byte_lines += byte_code
             self.byte_line_index += len(byte_code)
-        for i in range(self.stack_size):
-            empty_space = [0, 0, 0, 0]
-            self.byte_lines += [empty_space]
-        self.process_labels()
-        for byte_line in self.byte_lines:
-            self.write_byte_line(byte_file, byte_line)
-        byte_file.close()
+        # print self.initialized_addresses
+        # print self.initialized_mentions
+        self.process_mentioning()
+        self.write_byte_file()
 
 if __name__ == '__main__':
-    translator = Translator('fib2.txt', 'bytecode_fib2.txt')
+    translator = Translator('fib3.txt', 'bytecode_fib3.txt')
     translator.translate()
 
